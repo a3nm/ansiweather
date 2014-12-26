@@ -36,7 +36,12 @@ function get_config {
 }
 
 # Location : example "Moscow,RU"
+if [ "X$1" = "X" ]
+then
 location=$(get_config "location" || echo "Paris,FR")
+else
+location="$1"
+fi
 
 # System of Units : "metric" or "imperial"
 units=$(get_config "units" || echo "metric")
@@ -45,7 +50,7 @@ units=$(get_config "units" || echo "metric")
 symbols=$(get_config "symbols" || echo true)
 
 # Choose how many prediction points to show
-npred=$(get_config "symbols" || echo 10)
+npred=$(get_config "symbols" || echo 30)
 
 
 #### [ Colors and characters ]#################################################
@@ -153,13 +158,13 @@ norm=`echo -e '\033[0;1m'`
 paste <(echo $forecast | jq '.list | .[] | .dt_txt' |tr -d '"' |
     cut -d'-' -f3 | sed 's/^/'$norm'/;s/:00:00/h/;')\
   <(echo $forecast | jq -r '.list | .[] | .rain | .["3h"]' |
-    sed 's/null//;s/^..*$/rain:&/;s/.*/'$red'&'$norm'/') \
+    sed 's/null//;s/0//;s/^..*$/rain:&/;s/.*/'$red'&'$norm'/') \
   <(echo $forecast | jq -r '.list | .[] | .clouds.all' | sed 's/null/./' |
     sed 's/.*/'$grey'clds:&'$norm'/') \
-  <(echo $forecast | jq -r '.list | .[] | .wind.speed' | sed 's/null/./' |
-    sed 's/..\..*/'$red'&'$norm'/;s/.*/wind:&/') \
   <(echo $forecast | jq -r '.list | .[] | .main.pressure' |
     sed 's/\..*//;s/.*/'$grey'pres:&'$norm'/') \
+  <(echo $forecast | jq -r '.list | .[] | .wind.speed' | sed 's/null/./' |
+    sed 's/\..*//;s/.*/'$grey'wind:&'$norm'/') \
   <(echo $forecast | jq -r '.list | .[] | .main.humidity' |
     sed 's/.*/'$grey'humd:&'$norm'/') \
   <(echo $forecast | jq -r '.list | .[] | .main.temp' |
